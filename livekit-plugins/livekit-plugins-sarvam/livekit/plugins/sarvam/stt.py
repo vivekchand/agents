@@ -32,7 +32,7 @@ from livekit.agents import (
     stt,
     utils,
 )
-from livekit.agents.utils.audio import AudioBuffer
+from livekit.agents.utils.audio import AudioBuffer, create_audio_buffer
 from livekit.agents.utils import merge_frames
 
 from .log import logger
@@ -203,7 +203,7 @@ class SpeechStream(stt.SpeechStream):
         self._api_key = api_key
         self._session = http_session
         self._audio_energy_filter = _AudioEnergyFilter()
-        self._buffer = AudioBuffer(
+        self._buffer = create_audio_buffer(
             sample_rate=opts.sample_rate,
             num_channels=opts.num_channels,
         )
