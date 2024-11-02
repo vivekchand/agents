@@ -13,5 +13,6 @@
 # limitations under the License.
 
 from .mp3 import Mp3StreamDecoder
+from .base64 import decode_base64_audio
 
-__all__ = ["Mp3StreamDecoder"]
+__all__ = ["Mp3StreamDecoder", "decode_base64_audio"]
