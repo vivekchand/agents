@@ -32,6 +32,7 @@ from livekit.agents import (
 
 from .log import logger
 from .models import SarvamLanguages, SarvamTTSModels, SarvamTTSSpeakers
+from .utils.codecs.base64 import decode_base64_audio
 
 BASE_URL = "https://api.sarvam.ai"
 
@@ -54,12 +55,12 @@ class TTS(tts.TTS):
         self,
         *,
         model: SarvamTTSModels = "bulbul:v1",
-        language: SarvamLanguages = "hi-IN",
-        speaker: SarvamTTSSpeakers = "meera",
+        language: SarvamLanguages = "kn-IN",
+        speaker: SarvamTTSSpeakers = "arvind",
         pitch: float = 0.0,
         pace: float = 1.65,
         loudness: float = 1.5,
-        sample_rate: int = 8000,
+        sample_rate: int = 16000,
         enable_preprocessing: bool = True,
         word_tokenizer: tokenize.WordTokenizer = tokenize.basic.WordTokenizer(
             ignore_punctuation=False
@@ -147,7 +148,7 @@ class ChunkedStream(tts.ChunkedStream):
                     "enable_preprocessing": self._opts.enable_preprocessing,
                     "model": self._opts.model,
                 }
-            print('---- request details: ')
+            print('TTS: ---- request details: ')
             print(url)
             print(data)
             async with self._session.post(
@@ -160,12 +161,12 @@ class ChunkedStream(tts.ChunkedStream):
                 json=data,
             ) as res:
                 response = await res.json()
-                print("---------------- response is: ")
+                print("TTS: ---------------- response is: ")
                 print(response)
-                audio_data = response["audios"]  # base64 encoded audio data
+                audio_data = response["audios"][0]  # base64 encoded audio data
 
                 # Convert base64 audio to PCM frames
-                frames = utils.codecs.decode_base64_audio(
+                frames = decode_base64_audio(
                     audio_data,
                     sample_rate=self._opts.sample_rate,
                     num_channels=1,
