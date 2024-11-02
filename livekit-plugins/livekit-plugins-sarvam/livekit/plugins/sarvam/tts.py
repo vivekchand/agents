@@ -138,7 +138,7 @@ class ChunkedStream(tts.ChunkedStream):
             async with self._session.post(
                 url=f"{BASE_URL}/text-to-speech",
                 headers={
-                    "Authorization": f"Bearer {self._api_key}",
+                    "api-subscription-key": self._api_key,
                     "Accept": "application/json",
                     "Content-Type": "application/json",
                 },
