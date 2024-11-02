@@ -170,7 +170,7 @@ class TTSSegmentsForwarder:
         self._check_not_closed()
         self._finshed_seg_index += 1
 
-    def push_audio(self, frame: rtc.AudioFrame) -> None:
+    def push_audio(self, frame: Union[rtc.AudioFrame, "numpy.ndarray"]) -> None:
         self._check_not_closed()
 
         if self._audio_data is None:
@@ -178,7 +178,11 @@ class TTSSegmentsForwarder:
             self._audio_q.append(self._audio_data)
             self._audio_q_changed.set()
 
-        frame_duration = frame.samples_per_channel / frame.sample_rate
+        if isinstance(frame, rtc.AudioFrame):
+            frame_duration = frame.samples_per_channel / frame.sample_rate
+        else:
+            # For numpy array, assume shape is (samples, channels)
+            frame_duration = frame.shape[0] / 24000  # Default sample rate
         self._audio_data.pushed_duration += frame_duration
 
     def mark_audio_segment_end(self) -> None:
