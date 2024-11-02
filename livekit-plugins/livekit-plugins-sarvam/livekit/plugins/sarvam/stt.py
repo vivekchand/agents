@@ -151,7 +151,7 @@ class STT(stt.STT):
                 url=f"{BASE_URL}/speech-to-text",
                 data=form,
                 headers={
-                    "Authorization": f"Bearer {self._api_key}",
+                    "api-subscription-key": self._api_key,
                 },
             ) as res:
                 response = await res.json()
