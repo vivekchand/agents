@@ -37,7 +37,7 @@ from livekit.agents.utils import AudioBuffer, merge_frames
 from .log import logger
 from .models import SarvamLanguages, SarvamSTTModels
 
-BASE_URL = "https://api.sarvam.ai"
+BASE_URL = "https://api.sarvam.ai/v1"
 
 # This is the magic number during testing that we use to determine if a frame is loud enough
 # to possibly contain speech. It's very conservative.
@@ -72,15 +72,17 @@ class STTOptions:
     model: SarvamSTTModels
     sample_rate: int
     num_channels: int
+    with_timestamps: bool
 
 
 class STT(stt.STT):
     def __init__(
         self,
         *,
-        model: SarvamSTTModels = "whisper-large-v3",
-        language: SarvamLanguages = "en",
+        model: SarvamSTTModels = "saarika:v1",
+        language: SarvamLanguages = "hi-IN",
         sample_rate: int = 16000,
+        with_timestamps: bool = True,
         api_key: str | None = None,
         http_session: aiohttp.ClientSession | None = None,
     ) -> None:
@@ -88,9 +90,10 @@ class STT(stt.STT):
         Create a new instance of Sarvam AI STT.
 
         Args:
-            model (SarvamSTTModels): The model to use for speech recognition. Defaults to "whisper-large-v3".
-            language (SarvamLanguages): The language code. Defaults to "en".
+            model (SarvamSTTModels): The model to use for speech recognition. Defaults to "saarika:v1".
+            language (SarvamLanguages): The language code. Defaults to "hi-IN".
             sample_rate (int): Audio sample rate in Hz. Defaults to 16000.
+            with_timestamps (bool): Include word timestamps in the output. Defaults to True.
             api_key (str | None): Sarvam AI API key. Can be set via argument or SARVAM_API_KEY environment variable.
             http_session (aiohttp.ClientSession | None): Optional HTTP session for API requests.
         """
@@ -111,6 +114,7 @@ class STT(stt.STT):
             model=model,
             sample_rate=sample_rate,
             num_channels=1,
+            with_timestamps=with_timestamps,
         )
         self._session = http_session
 
@@ -134,20 +138,20 @@ class STT(stt.STT):
             wav.setframerate(buffer.sample_rate)
             wav.writeframes(buffer.data)
 
-        data = io_buffer.getvalue()
+        audio_data = io_buffer.getvalue()
 
         try:
+            form = aiohttp.FormData()
+            form.add_field("language_code", config.language)
+            form.add_field("model", config.model)
+            form.add_field("with_timestamps", str(config.with_timestamps).lower())
+            form.add_field("audio_data", audio_data, filename="audio.wav", content_type="audio/wav")
+
             async with self._ensure_session().post(
-                url=f"{BASE_URL}/speech/recognition",
-                data=data,
+                url=f"{BASE_URL}/speech-to-text",
+                data=form,
                 headers={
                     "Authorization": f"Bearer {self._api_key}",
-                    "Accept": "application/json",
-                    "Content-Type": "audio/wav",
-                },
-                params={
-                    "model": config.model,
-                    "language": config.language,
                 },
             ) as res:
                 response = await res.json()
@@ -158,6 +162,8 @@ class STT(stt.STT):
                             language=config.language,
                             text=response["text"],
                             confidence=1.0,  # Sarvam AI doesn't provide confidence scores
+                            start_time=response.get("start_time", 0),
+                            end_time=response.get("end_time", 0),
                         )
                     ],
                 )
