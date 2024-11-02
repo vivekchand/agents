@@ -32,7 +32,8 @@ from livekit.agents import (
     stt,
     utils,
 )
-from livekit.agents.utils import AudioBuffer, merge_frames
+from livekit.agents.utils.audio import AudioBuffer
+from livekit.agents.utils import merge_frames
 
 from .log import logger
 from .models import SarvamLanguages, SarvamSTTModels
