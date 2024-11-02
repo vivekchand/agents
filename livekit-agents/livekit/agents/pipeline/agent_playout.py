@@ -144,7 +144,11 @@ class AgentPlayout(utils.EventEmitter[EventTypes]):
                     self.emit("playout_started")
                     first_frame = False
 
-                handle._pushed_duration += frame.samples_per_channel / frame.sample_rate
+                if isinstance(frame, rtc.AudioFrame):
+                    handle._pushed_duration += frame.samples_per_channel / frame.sample_rate
+                else:
+                    # For numpy array, assume shape is (samples, channels)
+                    handle._pushed_duration += frame.shape[0] / 24000  # Default sample rate
                 await self._audio_source.capture_frame(frame)
 
             if self._audio_source.queued_duration > 0:
