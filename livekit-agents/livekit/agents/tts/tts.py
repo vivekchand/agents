@@ -100,8 +100,8 @@ class ChunkedStream(ABC):
             else:
                 # For numpy array frames
                 samples = ev.frame.shape[0]
-                sample_rate = 24000  # Default sample rate
-                audio_duration += samples / sample_rate
+                # Use TTS instance's sample rate
+                audio_duration += samples / self._tts.sample_rate
 
         duration = time.perf_counter() - start_time
         metrics = TTSMetrics(
@@ -217,8 +217,8 @@ class SynthesizeStream(ABC):
             else:
                 # For numpy array frames
                 samples = ev.frame.shape[0]
-                sample_rate = 24000  # Default sample rate
-                audio_duration += samples / sample_rate
+                # Use TTS instance's sample rate
+                audio_duration += samples / self._tts.sample_rate
             request_id = ev.request_id
 
             if ev.is_final:
