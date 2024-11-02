@@ -33,7 +33,7 @@ from livekit.agents import (
 from .log import logger
 from .models import SarvamLanguages, SarvamTTSModels, SarvamTTSSpeakers
 
-BASE_URL = "https://api.sarvam.ai/v1"
+BASE_URL = "https://api.sarvam.ai"
 
 
 @dataclass
@@ -135,14 +135,8 @@ class ChunkedStream(tts.ChunkedStream):
         request_id = utils.shortuuid()
 
         try:
-            async with self._session.post(
-                url=f"{BASE_URL}/text-to-speech",
-                headers={
-                    "api-subscription-key": self._api_key,
-                    "Accept": "application/json",
-                    "Content-Type": "application/json",
-                },
-                json={
+            url = f"{BASE_URL}/text-to-speech"
+            data = {
                     "inputs": [self._input_text],
                     "target_language_code": self._opts.language,
                     "speaker": self._opts.speaker,
@@ -152,10 +146,23 @@ class ChunkedStream(tts.ChunkedStream):
                     "speech_sample_rate": self._opts.sample_rate,
                     "enable_preprocessing": self._opts.enable_preprocessing,
                     "model": self._opts.model,
+                }
+            print('---- request details: ')
+            print(url)
+            print(data)
+            async with self._session.post(
+                url=url,
+                headers={
+                    "api-subscription-key": self._api_key,
+                    "Accept": "application/json",
+                    "Content-Type": "application/json",
                 },
+                json=data,
             ) as res:
                 response = await res.json()
-                audio_data = response["audio"]  # base64 encoded audio data
+                print("---------------- response is: ")
+                print(response)
+                audio_data = response["audios"]  # base64 encoded audio data
 
                 # Convert base64 audio to PCM frames
                 frames = utils.codecs.decode_base64_audio(
