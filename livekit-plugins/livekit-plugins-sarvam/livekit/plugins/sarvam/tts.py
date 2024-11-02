@@ -31,16 +31,21 @@ from livekit.agents import (
 )
 
 from .log import logger
-from .models import SarvamLanguages, SarvamTTSModels
+from .models import SarvamLanguages, SarvamTTSModels, SarvamTTSSpeakers
 
-BASE_URL = "https://api.sarvam.ai/v1"
+BASE_URL = "https://api.sarvam.ai"
 
 
 @dataclass
 class TTSOptions:
     language: SarvamLanguages | str
     model: SarvamTTSModels
+    speaker: SarvamTTSSpeakers
+    pitch: float
+    pace: float
+    loudness: float
     sample_rate: int
+    enable_preprocessing: bool
     word_tokenizer: tokenize.WordTokenizer
 
 
@@ -48,9 +53,14 @@ class TTS(tts.TTS):
     def __init__(
         self,
         *,
-        model: SarvamTTSModels = "indic-tts-male",
-        language: SarvamLanguages = "en",
-        sample_rate: int = 22050,
+        model: SarvamTTSModels = "bulbul:v1",
+        language: SarvamLanguages = "hi-IN",
+        speaker: SarvamTTSSpeakers = "meera",
+        pitch: float = 0.0,
+        pace: float = 1.65,
+        loudness: float = 1.5,
+        sample_rate: int = 8000,
+        enable_preprocessing: bool = True,
         word_tokenizer: tokenize.WordTokenizer = tokenize.basic.WordTokenizer(
             ignore_punctuation=False
         ),
@@ -61,9 +71,14 @@ class TTS(tts.TTS):
         Create a new instance of Sarvam AI TTS.
 
         Args:
-            model (SarvamTTSModels): The model to use for text-to-speech. Defaults to "indic-tts-male".
-            language (SarvamLanguages): The language code. Defaults to "en".
-            sample_rate (int): Audio sample rate in Hz. Defaults to 22050.
+            model (SarvamTTSModels): The model to use for text-to-speech. Defaults to "bulbul:v1".
+            language (SarvamLanguages): The language code. Defaults to "hi-IN".
+            speaker (SarvamTTSSpeakers): The speaker voice to use. Defaults to "meera".
+            pitch (float): Voice pitch adjustment. Defaults to 0.0.
+            pace (float): Speaking pace. Defaults to 1.65.
+            loudness (float): Voice loudness. Defaults to 1.5.
+            sample_rate (int): Audio sample rate in Hz. Defaults to 8000.
+            enable_preprocessing (bool): Enable text preprocessing. Defaults to True.
             word_tokenizer (tokenize.WordTokenizer): Tokenizer for processing text.
             api_key (str | None): Sarvam AI API key. Can be set via argument or SARVAM_API_KEY environment variable.
             http_session (aiohttp.ClientSession | None): Optional HTTP session for API requests.
@@ -82,7 +97,12 @@ class TTS(tts.TTS):
         self._opts = TTSOptions(
             language=language,
             model=model,
+            speaker=speaker,
+            pitch=pitch,
+            pace=pace,
+            loudness=loudness,
             sample_rate=sample_rate,
+            enable_preprocessing=enable_preprocessing,
             word_tokenizer=word_tokenizer,
         )
         self._session = http_session
@@ -116,16 +136,22 @@ class ChunkedStream(tts.ChunkedStream):
 
         try:
             async with self._session.post(
-                url=f"{BASE_URL}/tts/generate",
+                url=f"{BASE_URL}/text-to-speech",
                 headers={
                     "Authorization": f"Bearer {self._api_key}",
                     "Accept": "application/json",
                     "Content-Type": "application/json",
                 },
                 json={
-                    "text": self._input_text,
+                    "inputs": [self._input_text],
+                    "target_language_code": self._opts.language,
+                    "speaker": self._opts.speaker,
+                    "pitch": self._opts.pitch,
+                    "pace": self._opts.pace,
+                    "loudness": self._opts.loudness,
+                    "speech_sample_rate": self._opts.sample_rate,
+                    "enable_preprocessing": self._opts.enable_preprocessing,
                     "model": self._opts.model,
-                    "language": self._opts.language,
                 },
             ) as res:
                 response = await res.json()
