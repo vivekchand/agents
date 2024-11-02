@@ -33,7 +33,7 @@ from livekit.agents import (
 from .log import logger
 from .models import SarvamLanguages, SarvamTTSModels, SarvamTTSSpeakers
 
-BASE_URL = "https://api.sarvam.ai"
+BASE_URL = "https://api.sarvam.ai/v1"
 
 
 @dataclass
