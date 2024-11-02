@@ -1,24 +1,27 @@
 from typing import Literal
 
 SarvamLanguages = Literal[
-    "en",  # English
-    "hi",  # Hindi
-    "ta",  # Tamil
-    "te",  # Telugu
-    "kn",  # Kannada
-    "ml",  # Malayalam
-    "mr",  # Marathi
-    "gu",  # Gujarati
-    "pa",  # Punjabi
-    "bn",  # Bengali
-    "or",  # Odia
+    "hi-IN",  # Hindi
+    "en-IN",  # Indian English
+    "ta-IN",  # Tamil
+    "te-IN",  # Telugu
+    "kn-IN",  # Kannada
+    "ml-IN",  # Malayalam
+    "mr-IN",  # Marathi
+    "gu-IN",  # Gujarati
+    "pa-IN",  # Punjabi
+    "bn-IN",  # Bengali
+    "or-IN",  # Odia
 ]
 
 SarvamSTTModels = Literal[
-    "whisper-large-v3",
+    "saarika:v1",
 ]
 
 SarvamTTSModels = Literal[
-    "indic-tts-male",
-    "indic-tts-female",
+    "bulbul:v1",
+]
+
+SarvamTTSSpeakers = Literal[
+    "meera",
 ]
