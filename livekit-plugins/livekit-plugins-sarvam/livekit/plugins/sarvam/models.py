@@ -24,4 +24,15 @@ SarvamTTSModels = Literal[
 
 SarvamTTSSpeakers = Literal[
     "meera",
+    "kshitij",
+    "tanmay",
+    "ankur",
+    "gargi",
+    "swapnil",
+    "anand",
+    "lakshmi",
+    "priya",
+    "ramesh",
+    "suresh",
+    "uma",
 ]
