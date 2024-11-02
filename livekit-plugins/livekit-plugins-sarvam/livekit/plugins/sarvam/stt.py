@@ -37,7 +37,7 @@ from livekit.agents.utils import AudioBuffer, merge_frames
 from .log import logger
 from .models import SarvamLanguages, SarvamSTTModels
 
-BASE_URL = "https://api.sarvam.ai/v1"
+BASE_URL = "https://api.sarvam.ai"
 
 # This is the magic number during testing that we use to determine if a frame is loud enough
 # to possibly contain speech. It's very conservative.
