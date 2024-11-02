@@ -95,7 +95,13 @@ class ChunkedStream(ABC):
             if ttfb == -1.0:
                 ttfb = time.perf_counter() - start_time
 
-            audio_duration += ev.frame.duration
+            if isinstance(ev.frame, rtc.AudioFrame):
+                audio_duration += ev.frame.samples_per_channel / ev.frame.sample_rate
+            else:
+                # For numpy array frames
+                samples = ev.frame.shape[0]
+                sample_rate = 24000  # Default sample rate
+                audio_duration += samples / sample_rate
 
         duration = time.perf_counter() - start_time
         metrics = TTSMetrics(
@@ -206,7 +212,13 @@ class SynthesizeStream(ABC):
             if ttfb == -1.0:
                 ttfb = time.perf_counter() - start_time
 
-            audio_duration += ev.frame.duration
+            if isinstance(ev.frame, rtc.AudioFrame):
+                audio_duration += ev.frame.samples_per_channel / ev.frame.sample_rate
+            else:
+                # For numpy array frames
+                samples = ev.frame.shape[0]
+                sample_rate = 24000  # Default sample rate
+                audio_duration += samples / sample_rate
             request_id = ev.request_id
 
             if ev.is_final:
