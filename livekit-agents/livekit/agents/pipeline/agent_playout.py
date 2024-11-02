@@ -146,10 +146,22 @@ class AgentPlayout(utils.EventEmitter[EventTypes]):
 
                 if isinstance(frame, rtc.AudioFrame):
                     handle._pushed_duration += frame.samples_per_channel / frame.sample_rate
+                    await self._audio_source.capture_frame(frame)
                 else:
                     # For numpy array, assume shape is (samples, channels)
-                    handle._pushed_duration += frame.shape[0] / 24000  # Default sample rate
-                await self._audio_source.capture_frame(frame)
+                    samples = frame.shape[0]
+                    channels = frame.shape[1] if len(frame.shape) > 1 else 1
+                    sample_rate = 24000  # Default sample rate
+                    handle._pushed_duration += samples / sample_rate
+                    
+                    # Create proper AudioFrame from numpy array
+                    audio_frame = rtc.AudioFrame(
+                        data=frame.tobytes(),
+                        samples_per_channel=samples,
+                        sample_rate=sample_rate,
+                        num_channels=channels
+                    )
+                    await self._audio_source.capture_frame(audio_frame)
 
             if self._audio_source.queued_duration > 0:
                 await self._audio_source.wait_for_playout()
